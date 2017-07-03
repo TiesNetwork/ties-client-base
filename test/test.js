@@ -5,32 +5,64 @@
 var assert = require('assert');
 var Client = require('../index.js');
 
+async function sleep(tm) {
+    return new Promise(resolve => setTimeout(resolve, tm));
+}
+
 describe('Ties Client Basic functions', function() {
+    before(async function(){
+        this.timeout(5000);
+        Client.setConfig('test');
+        await Client.connect();
+    });
+
     describe('cryptography', function() {
+        let user;
+        before(async function(){
+            user = await Client.User.createFromPrivateKey('crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute');
+            user.wallet.setPassword('123456');
+            Client.signingWallet = user.wallet;
+            Client.confirmCallback = async function(description) {
+                console.log("Confirming transaction: " + description);
+                await sleep(5000);
+                console.log("User confirmed with password: 123456");
+                return "123456";
+            }
+        });
+
         it('should user restore from phrase', async function() {
-            this.timeout(5000);
-            await Client.models.pendingConnect;
-            let wallet = await Client.currentUserFromRecoveryPhrase('crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute');
-            assert.ok(Client.currentUserWallet.address == '0x00dbD017A900258A242599624781f7423969c671'.toLowerCase());
+            assert.ok(user.wallet.address == '0x00dbD017A900258A242599624781f7423969c671'.toLowerCase());
+        });
+
+        it('can check user balance', async function() {
+            let val = await user.getBalance();
+            assert.ok(val.gt(0));
+        });
+
+        it('can check user deposit', async function() {
+            this.timeout(60000); //Waiting a minute for a transaction confirmation
+            let prevval = await user.getDeposit();
+            await user.register();
+            let val = await user.getDeposit();
+            assert.ok(val.gt(prevval));
         });
 
         it('should delete user', async function() {
-            await Client.saveObject('ties_user', {__address: Client.currentUserWallet.address}, true);
-            let users = await Client.models.instance.User.findAsync({__address: Client.currentUserWallet.address}, {raw: true});
-            assert.ok(!users[0]);
+            await user.deleteFromDB();
+            let _user = await Client.User.createFromDB(user.wallet.address);
+            assert.ok(!_user.isLoaded());
         });
 
         it('should create user', async function() {
-            await Client.saveObject('ties_user', {
-                __address: Client.currentUserWallet.address,
+            user.user = {
+                __address: user.wallet.address,
                 name: 'Test Dmitry Kochin',
                 description: "The CTO of Ties.Network",
                 keywords: ['blockchain', 'network', 'smart contract', 'cryptocurrency', 'token', 'programming']
-            });
-            let users = await Client.models.instance.User.findAsync({__address: Client.currentUserWallet.address}, {raw: true});
-            let user = users[0];
-            assert.ok(user && user.name == 'Test Dmitry Kochin');
+            };
+            await user.saveToDB();
+            let _user = await Client.User.createFromDB(user.wallet.address);
+            assert.ok(_user.isLoaded() && _user.user.name == 'Test Dmitry Kochin');
         });
-
     });
 });

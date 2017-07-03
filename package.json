@@ -1,6 +1,6 @@
 {
   "name": "@ties-network/ties-client-base",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ties.Network client library",
   "main": "index.js",
   "scripts": {
@@ -9,14 +9,30 @@
   "author": "Dmitry Kochin <k@ties.network>",
   "license": "ISC",
   "dependencies": {
-    "@ties-network/db-sign": "0.0.1",
+    "@ties-network/db-sign": "^0.1.1",
     "canonical-json": "0.0.4",
     "ethereumjs-util": "^5.1.2",
+    "ethjs-provider-signer": "^0.1.4",
+    "ethjs-signer": "^0.1.1",
     "express-cassandra": "^1.9.0",
     "request": "^2.81.0",
-    "request-promise-native": "^1.0.4"
+    "request-promise-native": "^1.0.4",
+    "truffle-contract": "^2.0.1",
+    "web3": "^0.19.1"
   },
   "devDependencies": {
-    "mocha": "^3.4.2"
-  }
+    "mocha": "^3.4.2",
+    "truffle-artifactor": "^2.1.4"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TiesNetwork/ties-client-base.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TiesNetwork/ties-client-base/issues"
+  },
+  "homepage": "https://github.com/TiesNetwork/ties-client-base#readme"
 }
