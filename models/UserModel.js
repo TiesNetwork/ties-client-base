@@ -10,7 +10,19 @@ module.exports = {
         	type: "bigint"
         },
         name: {
-        	type: "varchar"
+        	type: "text"
+        },
+        surname: {
+        	type: "text"
+        },
+        company: {
+        	type: "text"
+        },
+        position: {
+        	type: "text"
+        },
+        country: {
+        	type: "text"
         },
         description: {
         	type: "text"
@@ -24,5 +36,6 @@ module.exports = {
         },
     },
     key : ["__address"],
+    indexes: [ 'company', 'country', 'keywords', 'name', 'position', 'surname' ],
     table_name: "ties_user",
 }
