@@ -28,8 +28,8 @@ module.exports = {
         	type: "text"
         },
         keywords: {
-        	type: "set",
-        	typeDef: "<varchar>"
+        	type: "list",
+        	typeDef: "<text>"
         },
         photo: {
         	type: "blob"

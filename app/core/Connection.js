@@ -32,16 +32,14 @@ async function connectToDataBase() {
                     queryOptions: {consistency: models.consistencies.one},
                     authProvider: new models.driver.auth.DsePlainTextAuthProvider(config.connection.login, config.connection.password)
                 },
-                ormOptions: {
-                    //If your keyspace doesn't exist it will be created automatically
-                    //using the default replication strategy provided here.
+/*                ormOptions: {
                     defaultReplicationStrategy: {
-                        class: 'SimpleStrategy',
-                        replication_factor: 1
+                        class: 'NetworkTopologyStrategy',
+                        DC1: '1'
                     },
                     migration: 'safe',
-                    createKeyspace: true
-                }
+                    createKeyspace: false
+                }*/
             },
             function (err) {
                 if (err)
