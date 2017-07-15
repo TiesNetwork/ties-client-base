@@ -7,7 +7,7 @@ module.exports = {
         port: 9042
     },
     tiesdb: {
-        host: 'http://localhost:3000/db/',
+        host: 'http://localhost:3000/',
     },
     blockchain: {
         host: 'http://localhost:8545'

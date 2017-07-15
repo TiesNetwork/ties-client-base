@@ -5,7 +5,10 @@
 const Wallet = require('./Wallet');
 const c = require('./Connection');
 
+const TABLE_NAME = 'ties_user';
+
 class User {
+
 
     constructor() {
         this.wallet = null;
@@ -15,6 +18,12 @@ class User {
     static async createNew(){
         const user = new User();
         await user.initializeNew();
+        return user;
+    }
+
+    static createFromData(row){
+        const user = new User();
+        user.initializeFromData(row);
         return user;
     }
 
@@ -61,6 +70,11 @@ class User {
         await this.loadFromDB();
     }
 
+    initializeFromData(row){
+        this.wallet = Wallet.createFromAddress(row.__address);
+        this.user = row;
+    }
+
     async getDeposit() {
         return await c.UserRegistry.getDeposit(this.wallet.address);
     }
@@ -91,11 +105,11 @@ class User {
     }
 
     async saveToDB(){
-        return await c.saveObject('ties_user', this.user);
+        return await c.saveObject(TABLE_NAME, this.user);
     }
 
     async deleteFromDB(){
-        return await c.saveObject('ties_user', {__address: this.wallet.address}, true);
+        return await c.saveObject(TABLE_NAME, {__address: this.wallet.address}, true);
     }
 
     /**
@@ -104,6 +118,34 @@ class User {
      */
     isLoaded() {
         return !!this.user;
+    }
+
+    static async search(keyword) {
+        let objects = await c.searchObjects(TABLE_NAME, {
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "multi_match": {
+                                "query": keyword,
+                                "type": "best_fields",
+                                "fields": [
+                                    "keywords",
+                                    "name",
+                                    "surname",
+                                    "description",
+                                    "country",
+                                    "position",
+                                    "company"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        });
+
+        return objects.map(o => User.createFromData(o));
     }
 
 }

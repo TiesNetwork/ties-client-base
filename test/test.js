@@ -39,7 +39,7 @@ describe('Ties Client Basic functions', function() {
             let val = await user.getBalance();
             assert.ok(val.gt(0));
         });
-
+/*
         it('can check user deposit', async function() {
             this.timeout(60000); //Waiting a minute for a transaction confirmation
             let prevval = await user.getDeposit();
@@ -47,7 +47,7 @@ describe('Ties Client Basic functions', function() {
             let val = await user.getDeposit();
             assert.ok(val.gt(prevval));
         });
-
+*/
         it('should delete user', async function() {
             await user.deleteFromDB();
             let _user = await Client.User.createFromDB(user.wallet.address);
@@ -69,6 +69,18 @@ describe('Ties Client Basic functions', function() {
             let _user = await Client.User.createFromDB(user.wallet.address);
             assert.ok(_user.isLoaded() && _user.user.name == 'Vassiliy');
         });
+
+        it('should search user', async function() {
+            this.timeout(5000);
+            await sleep(2000); //Give elasticsearch the time to update indexes
+
+            let users = await Client.User.search('game');
+            assert.equal(users.length, 2, 'There should be 2 users interested in games');
+
+            users = await Client.User.search('dmitry kochin');
+            assert.equal(users[0] && (users[0].user.name + ' ' + users[0].user.surname), 'Dmitry Kochin');
+        });
+
     });
 });
 
