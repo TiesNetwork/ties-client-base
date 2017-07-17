@@ -60,7 +60,20 @@ class Wallet {
         return EC.encryptPrivateKey(this.secret, this.password);
     }
 
+    toJson(){
+        return {
+            phrase: this.phrase,
+            secret: this.secret,
+            public: this.public,
+            address: this.address,
+            password: this.password
+        }
+    }
 
+    static fromJson(json){
+        let w = new Wallet(json);
+        return w;
+    }
 }
 
 module.exports = Wallet;

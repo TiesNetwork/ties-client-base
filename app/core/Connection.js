@@ -2,13 +2,13 @@
  * Created by Dukei on 03.07.2017.
  */
 
-let models = require("express-cassandra");
-let EUtils = require("ethereumjs-util");
-let config = require('../../config');
+const models = require("express-cassandra");
+const EUtils = require("ethereumjs-util");
+const config = require('../../config');
 const Web3 = require('web3');
 const web3 = new Web3();
-let EC = require("@ties-network/db-sign");
-let rp = require('request-promise-native');
+const EC = require("@ties-network/db-sign");
+const rp = require('request-promise-native');
 
 const PromisifyWeb3 = require("../misc/promisifyWeb3.js");
 PromisifyWeb3.promisify(web3);
@@ -153,6 +153,29 @@ class Connection {
 
     setConfig(_config) {
         config.setConfig(_config);
+    }
+
+    setUser(user){
+        this.user = user;
+        this.signingWallet = user.wallet;
+    }
+
+    async createUserNew(){
+        let user = await this.User.createNew();
+        this.setUser(user);
+        return user;
+    }
+
+    async createUserDecrypt(encrypted_json_str, password){
+        let user = await this.User.createDecrypt(encrypted_json_str, password);
+        this.setUser(user);
+        return user;
+    }
+
+    async createUserFromPrivateKey(phraseOrHexpk){
+        let user = await this.User.createFromPrivateKey(phraseOrHexpk);
+        this.setUser(user);
+        return user;
     }
 
     /**

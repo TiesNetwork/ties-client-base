@@ -8,8 +8,6 @@ const c = require('./Connection');
 const TABLE_NAME = 'ties_user';
 
 class User {
-
-
     constructor() {
         this.wallet = null;
         this.user = null;
@@ -146,6 +144,20 @@ class User {
         });
 
         return objects.map(o => User.createFromData(o));
+    }
+
+    toJson(){
+        return {
+            user: this.user,
+            wallet: this.wallet.toJson()
+        }
+    }
+
+    static fromJson(json){
+        let u = new User();
+        u.user = json.user;
+        u.wallet = Wallet.fromJson(json.wallet);
+        return u;
     }
 
 }

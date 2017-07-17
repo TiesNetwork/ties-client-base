@@ -20,9 +20,8 @@ describe('Ties Client Basic functions', function() {
     describe('cryptography', function() {
         let user;
         before(async function(){
-            user = await Client.User.createFromPrivateKey('crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute');
+            user = await Client.createUserFromPrivateKey('crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute');
             user.wallet.setPassword('123456');
-            Client.signingWallet = user.wallet;
             Client.confirmCallback = async function(description) {
                 console.log("Confirming transaction: " + description);
                 await sleep(5000);
@@ -175,8 +174,7 @@ async function mockupData(){
 
     for(let i=0; i<users.length; ++i){
         let user = users[i];
-        let u = await Client.User.createFromPrivateKey(user.name + ' crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute');
-        Client.signingWallet = u.wallet;
+        let u = await Client.createUserFromPrivateKey(user.name + ' crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute');
         let projects = user.projects;
         delete user.projects;
         user.__address = u.wallet.address;
