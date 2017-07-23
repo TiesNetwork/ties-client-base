@@ -69,6 +69,26 @@ describe('Ties Client Basic functions', function() {
             assert.ok(_user.isLoaded() && _user.user.name == 'Vassiliy');
         });
 
+        it('should manipulate projects', async function() {
+            let proj = user.newProject({
+                name: 'Ties.Network',
+                date_start: '2017-05-15',
+                date_end: null,
+                description: 'A new business platform for cryptocommunity including unique decentralized database'
+            });
+
+            await proj.saveToDB();
+
+            let projects = await user.getProjects();
+            assert.ok(projects.length >= 1, 'Vassiliy should have at least one project');
+
+            await proj.deleteFromDB();
+            delete(user.projects); //Remove projects cash
+
+            proj = await Client.Project.createFromDB(proj.raw.__address, proj.raw.id);
+            assert.ok(proj == null, 'The project should have been deleted')
+        });
+
         it('should search user', async function() {
             this.timeout(5000);
             await sleep(2000); //Give elasticsearch the time to update indexes

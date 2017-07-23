@@ -126,6 +126,10 @@ class Connection {
         return require('./User');
     }
 
+    get Project() {
+        return require('./Project');
+    }
+
     get Wallet() {
         return require('./Wallet');
     }

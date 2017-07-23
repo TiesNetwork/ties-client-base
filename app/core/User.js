@@ -4,6 +4,7 @@
 
 const Wallet = require('./Wallet');
 const c = require('./Connection');
+const Project = require('./Project');
 
 const TABLE_NAME = 'ties_user';
 
@@ -149,6 +150,7 @@ class User {
     toJson(){
         return {
             user: this.user,
+            projects: projects && projects.map(p => p.toJson()),
             wallet: this.wallet.toJson()
         }
     }
@@ -156,8 +158,29 @@ class User {
     static fromJson(json){
         let u = new User();
         u.user = json.user;
+        u.projects = json.projects && json.projects.map(p => Project.fromJson(p));
         u.wallet = Wallet.fromJson(json.wallet);
         return u;
+    }
+
+    async getProjects(){
+        if(this.projects)
+            return this.projects;
+
+        this.projects = await c.DB.instance.Project.findAsync({__address: this.wallet.address}, {raw: true});
+        return this.projects.map(p => Project.createFromData(p));
+    }
+
+    /**
+     *
+     * @param object raw
+     * @returns Project
+     */
+    newProject(raw){
+        raw.__address = this.wallet.address;
+        if(!raw.id)
+            raw.id = c.DB.uuid().toString();
+        return Project.createFromData(raw);
     }
 
 }

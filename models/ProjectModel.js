@@ -25,7 +25,8 @@ module.exports = {
         	type: "text"
         },
     },
-    key : [["__address", "id"]],
+    key : [["__address"], "id"],
+    clustering_order: { id: 'ASC' },
     indexes: [ 'name' ],
     table_name: "ties_project",
 }
