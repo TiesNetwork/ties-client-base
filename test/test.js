@@ -4,6 +4,7 @@
 
 var assert = require('assert');
 var Client = require('../index.js');
+var EC = require('@ties-network/db-sign');
 
 async function sleep(tm) {
     return new Promise(resolve => setTimeout(resolve, tm));
@@ -12,19 +13,19 @@ async function sleep(tm) {
 describe('Ties Client Basic functions', function() {
     before(async function(){
         this.timeout(20000);
-        Client.setConfig('test');
+        Client.setConfig('test_local');
         await Client.connect();
         await mockupData();
     });
 
     describe('cryptography', function() {
-        let user;
+        let user, mainUser;
         before(async function(){
-            user = await Client.createUserFromPrivateKey('crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute');
+            mainUser = user = await Client.createUserFromPrivateKey('crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute');
             user.wallet.setPassword('123456');
             Client.confirmCallback = async function(description) {
                 console.log("Confirming transaction: " + description);
-                await sleep(5000);
+                //await sleep(5000);
                 console.log("User confirmed with password: 123456");
                 return "123456";
             }
@@ -38,7 +39,7 @@ describe('Ties Client Basic functions', function() {
             let val = await user.getBalance();
             assert.ok(val.gt(0));
         });
-/*
+
         it('can check user deposit', async function() {
             this.timeout(60000); //Waiting a minute for a transaction confirmation
             let prevval = await user.getDeposit();
@@ -46,7 +47,7 @@ describe('Ties Client Basic functions', function() {
             let val = await user.getDeposit();
             assert.ok(val.gt(prevval));
         });
-*/
+
         it('should delete user', async function() {
             await user.deleteFromDB();
             let _user = await Client.User.createFromDB(user.wallet.address);
@@ -100,6 +101,89 @@ describe('Ties Client Basic functions', function() {
             assert.equal(users[0] && (users[0].user.name + ' ' + users[0].user.surname), 'Dmitry Kochin');
         });
 
+        let invite1, invite2;
+        it('should issue invitations', async function() {
+            this.timeout(60000);
+            let user = Client.user;
+
+            let lastInvite = await user.invitationGetLast();
+            lastInvite = lastInvite ? EC.decodeInvitation(lastInvite).index : 0;
+
+            //Withdraw latest invitations
+/*            for(let i=40; i<=lastInvite; ++i){
+                try {
+                    let code = EC.encodeInvitation(i, user.wallet.secret);
+                    let status = await user.invitationRedeem(code);
+                    console.log('Withdrawn invitation ' + i + ': ' + status);
+                }catch(e){
+                    console.log('Error Withdrawing invitation ' + i + ': ' + e.message);
+                }
+            }
+*/
+            invite1 = await Client.user.invitationCreate();
+            invite2 = await Client.user.invitationCreate();
+
+            let last = EC.decodeInvitation(invite2).index;
+
+            assert.equal(last, lastInvite + 2, 'There should be 2 invitations more issued by this user');
+        });
+
+        it('should redeem invitations (sponsored)', async function() {
+            this.timeout(60000);
+            let user = await Client.createUserFromPrivateKey("April crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute");
+            user.wallet.setPassword('123456');
+
+            //Ensure user has zero balance
+            let gp = await Client.BC.web3.eth.getGasPricePromise();
+            let balanceOld = await user.getNativeBalance();
+
+            if(!balanceOld.eq(0)){
+                await Client.makeTransactions(async() => {
+                    await Client.BC.web3.eth.sendTransactionPromise({
+                        from: user.wallet.address,
+                        to: mainUser.wallet.address,
+                        value: balanceOld.sub(gp.mul(21000)),
+                        gas: 21000,
+                        gasPrice: gp
+                    });
+                }, "Returning ether to main account");
+
+                let old = balanceOld;
+                while(true){
+                    balanceOld = await user.getNativeBalance();
+                    if(!balanceOld.eq(old))
+                        break;
+                    await sleep(500);
+                }
+            }
+
+            assert.ok(balanceOld.eq(0), 'User should have zero ether balance!');
+            let tokensOld = await user.getBalance();
+
+            await user.invitationRedeem(invite1);
+
+            let balance = await user.getNativeBalance();
+            let tokens = await user.getBalance();
+
+            assert.ok(balance.eq(balanceOld.add(Client.BC.web3.toWei(0.2, 'ether'))), "Ether balance should have increased");
+            assert.ok(tokens.eq(tokensOld.add(Client.BC.web3.toWei(10, 'ether'))), "TIE balance should have increased");
+        });
+
+        it('should withdraw invitation', async function() {
+            this.timeout(60000);
+            let user = Client.setUser(mainUser);
+
+            let balanceOld = await user.getNativeBalance();
+            let tokensOld = await user.getBalance();
+
+            await user.invitationRedeem(invite2);
+
+            let balance = await user.getNativeBalance();
+            let tokens = await user.getBalance();
+
+            assert.ok(balance.gt(balanceOld) && balance.lt(balanceOld.add(Client.BC.web3.toWei(0.2, 'ether'))), "Ether balance should have increased less than by 0.2");
+            assert.ok(tokens.eq(tokensOld.add(Client.BC.web3.toWei(10, 'ether'))), "TIE balance should have increased");
+        });
     });
 });
 

@@ -3,21 +3,14 @@
  */
 
 const models = require("express-cassandra");
-const EUtils = require("ethereumjs-util");
 const config = require('../../config');
-const Web3 = require('web3');
-const web3 = new Web3();
 const EC = require("@ties-network/db-sign");
+const EUtils = EC.EU;
 const rp = require('request-promise-native');
-
-const PromisifyWeb3 = require("../misc/promisifyWeb3.js");
-PromisifyWeb3.promisify(web3);
-
-let UserRegistryContract, TieTokenContract, UserRegistry, TieToken; //Contracts
-const SignerProvider = require('ethjs-provider-signer');
 
 let transactionData; //Info about outgoing transaction
 let connection; //The connection
+let blockchain; //connection to blockchain
 
 //Tell express-cassandra to use the models-directory, and
 //use bind() to load the models using cassandra configurations.
@@ -55,6 +48,7 @@ async function connectToDataBase() {
 
 async function connectToBlockchain(){
     const sign = require('ethjs-signer').sign;
+    const SignerProvider = require('ethjs-provider-signer');
 
     const provider = new SignerProvider(config.blockchain.host, {
         signTransaction: (rawTx, cb) => {
@@ -62,7 +56,7 @@ async function connectToBlockchain(){
                 return cb('You should perform transactions in connection.makeTransactions block!');
 
             let confirmPromise = (connection.callback)(transactionData.description);
-            web3.eth.estimateGas(rawTx, (error, result) => {
+            blockchain.web3.eth.estimateGas(rawTx, (error, result) => {
                 if(error) {
                     cb(error);
                 }else{
@@ -76,12 +70,9 @@ async function connectToBlockchain(){
         },
         accounts: (cb) => cb(null, [connection.wallet.address]),
     });
-    web3.setProvider(provider);
 
-    const Contract = require('../../contracts');
-    UserRegistryContract = Contract('UserRegistry', web3.currentProvider);
-    TieTokenContract = Contract('TieToken', web3.currentProvider);
-    [UserRegistry, TieToken] = await Promise.all([UserRegistryContract.deployed(), TieTokenContract.deployed()]);
+    blockchain = new EC.BlockChain(provider);
+    await blockchain.connect();
 }
 
 class Connection {
@@ -103,23 +94,7 @@ class Connection {
     }
 
     get BC() {
-        return web3;
-    }
-
-    get UserRegistry() {
-        return UserRegistry;
-    }
-
-    get UserRegistryContract() {
-        return UserRegistryContract;
-    }
-
-    get TieToken() {
-        return TieToken;
-    }
-
-    get TieTokenContract() {
-        return UserRegistryContract;
+        return blockchain;
     }
 
     get User() {
@@ -162,24 +137,22 @@ class Connection {
     setUser(user){
         this.user = user;
         this.signingWallet = user.wallet;
+        return user;
     }
 
     async createUserNew(){
         let user = await this.User.createNew();
-        this.setUser(user);
-        return user;
+        return this.setUser(user);
     }
 
     async createUserDecrypt(encrypted_json_str, password){
         let user = await this.User.createDecrypt(encrypted_json_str, password);
-        this.setUser(user);
-        return user;
+        return this.setUser(user);
     }
 
     async createUserFromPrivateKey(phraseOrHexpk){
         let user = await this.User.createFromPrivateKey(phraseOrHexpk);
-        this.setUser(user);
-        return user;
+        return this.setUser(user);
     }
 
     /**
@@ -201,9 +174,11 @@ class Connection {
             secret: null
         };
 
-        await payload();
-
-        transactionData = null;
+        try {
+            await payload();
+        }finally{
+            transactionData = null;
+        }
     }
 
     async saveObject(table, object, del) {
@@ -245,7 +220,10 @@ class Connection {
             json: true // Automatically parses the JSON string in the response
         });
 
-        return result;
+        if(!result.ok)
+            throw new Error(result.error || 'Unknown error querying DB');
+
+        return result.result;
     }
 
     static getModels() {
@@ -256,7 +234,7 @@ class Connection {
             , path = require('path');
         let models = [];
 
-        glob.sync('./models/*Model.js').forEach(function (file) {
+        glob.sync(path.join(__dirname, '../../models/*Model.js')).forEach(function (file) {
             let model = require(path.resolve(file));
             let name = path.basename(file, '.js');
             model.name = name.substr(0, name.length-5);
@@ -302,6 +280,22 @@ class Connection {
         let rows = promises.length ? await Promise.all(promises) : promises;
         return rows;
     }
+
+    async invitationRedeem(code, address){
+        let result = await rp({
+            method: 'POST',
+            uri: config.tiesdb.host + 'invite/redeem',
+            body: {code: code, address: address},
+            json: true // Automatically parses the JSON string in the response
+        });
+
+        if(!result.ok) {
+            throw new Error(result.error || 'Unknown error');
+        }
+
+        return result.status;
+    }
+
 }
 
 module.exports = new Connection();

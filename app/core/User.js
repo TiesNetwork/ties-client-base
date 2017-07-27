@@ -5,6 +5,7 @@
 const Wallet = require('./Wallet');
 const c = require('./Connection');
 const Project = require('./Project');
+const EC = require("@ties-network/db-sign");
 
 const TABLE_NAME = 'ties_user';
 
@@ -75,15 +76,15 @@ class User {
     }
 
     async getDeposit() {
-        return await c.UserRegistry.getDeposit(this.wallet.address);
+        return await c.BC.Registry.getDeposit(this.wallet.address);
     }
 
     async getBalance() {
-        return await c.TieToken.balanceOf(this.wallet.address);
+        return await c.BC.TieToken.balanceOf(this.wallet.address);
     }
 
     async getNativeBalance() {
-        return await c.web3.eth.getBalancePromise(this.wallet.address);
+        return await c.BC.web3.eth.getBalancePromise(this.wallet.address);
     }
 
     async hasDeposit() {
@@ -95,12 +96,65 @@ class User {
         const sum = 10 * Math.pow(10, 18);
         let self = this;
         await c.makeTransactions(async () => {
-            console.log('Approving token transfer');
-            await c.TieToken.approve(c.UserRegistryContract.address, sum, {from: self.wallet.address});
             console.log('Transferring deposit');
-            await c.UserRegistry.addDeposit(sum, {from: self.wallet.address});
+            await c.BC.TieToken.transfer(c.BC.RegistryContract.address, sum, {from: self.wallet.address});
             console.log('Registration done');
         }, "Registration in the Ties.Network (depositing 10 TIEs)");
+    }
+
+    async invitationCreate() {
+        if(!this.wallet.isPrivate())
+            throw new Error('You can only create invites for the session user');
+
+        const sum = 10 * Math.pow(10, 18);
+        const ether = c.BC.web3.toWei(0.20, "ether");
+        let  self = this;
+        await c.makeTransactions(async () => {
+            console.log('Issuing invitation');
+            await c.BC.TieToken.transferAndPay(c.BC.InvitationContract.address, sum, "0x", {from: self.wallet.address, value: ether});
+            console.log('Invitation done');
+        }, "Issuing invitation code (depositing 10 TIEs and 0.2 Ether for invittee)");
+
+        return await this.invitationGetLast();
+    }
+
+    async invitationGetLast() {
+        if(!this.wallet.isPrivate())
+            throw new Error('You can only create invites for the session user');
+
+        let lastInvite = await c.BC.Invitation.getLastInvite(this.wallet.address);
+        lastInvite = lastInvite.toNumber();
+        if(!lastInvite)
+            return null;
+        return EC.encodeInvitation(lastInvite, this.wallet.secret);
+    }
+
+    async invitationCheck(code){
+        let invite = EC.decodeInvitation(code);
+        return await c.BC.Invitation.isInvitationAvailable(invite.address, invite.index);
+    }
+
+    /**
+     *
+     * @param code
+     * @returns {Promise.<string>} Invited or InviteDeleted
+     */
+    async invitationRedeem(code){
+        if(!this.wallet.isPrivate())
+            throw new Error('You can only redeem invites for the session user');
+
+        let balance = await c.BC.web3.eth.getBalancePromise(this.wallet.address);
+        if(balance.gte(c.BC.web3.toWei(0.02, 'ether'))){
+            //Balance is enough to conduct operation from current user
+            let self = this, status;
+            await c.makeTransactions(async () => {
+                status = await c.BC.invitationRedeem(code, self.wallet.address, self.wallet.address);
+            }, "Redeem invitation code");
+            return status;
+        }else{
+            //User does not have ether. Sponsor him
+            return await c.invitationRedeem(code, this.wallet.address);
+        }
     }
 
     async saveToDB(){
