@@ -1,6 +1,6 @@
 {
   "name": "@ties-network/ties-client-base",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Ties.Network client library",
   "main": "index.js",
   "scripts": {
