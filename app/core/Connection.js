@@ -296,6 +296,10 @@ class Connection {
         return result.status;
     }
 
+    get Chat() {
+        return require('../chat');
+    }
+
 }
 
 module.exports = new Connection();

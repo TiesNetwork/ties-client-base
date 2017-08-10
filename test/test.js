@@ -13,7 +13,7 @@ async function sleep(tm) {
 describe('Ties Client Basic functions', function() {
     before(async function(){
         this.timeout(20000);
-        Client.setConfig('test_local');
+        Client.setConfig('test');
         await Client.connect();
         await mockupData();
     });
