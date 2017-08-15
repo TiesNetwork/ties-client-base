@@ -21,7 +21,16 @@ describe('Ties Client Basic functions', function() {
     describe('cryptography', function() {
         let user, mainUser;
         before(async function(){
+            this.timeout(5000);
             mainUser = user = await Client.createUserFromPrivateKey('crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute');
+
+            // await Client.BC.listenTransfer(mainUser.wallet.address, (balance, address, balanceOld) => {
+            //     console.log('Transfer received: ', balance, address, balanceOld);
+            // });
+            // await Client.BC.listenBalance(mainUser.wallet.address, (balance, addr, balanceOld) => {
+            //     console.log("Balance changed: ", balance, addr, balanceOld);
+            // });
+
             user.wallet.setPassword('123456');
             Client.confirmCallback = async function(description) {
                 console.log("Confirming transaction: " + description);
@@ -36,15 +45,15 @@ describe('Ties Client Basic functions', function() {
         });
 
         it('can check user balance', async function() {
-            let val = await user.getBalance();
+            let val = await user.getTieBalance();
             assert.ok(val.gt(0));
         });
 
         it('can check user deposit', async function() {
             this.timeout(60000); //Waiting a minute for a transaction confirmation
-            let prevval = await user.getDeposit();
+            let prevval = await user.getTieDeposit();
             await user.register();
-            let val = await user.getDeposit();
+            let val = await user.getTieDeposit();
             assert.ok(val.gt(prevval));
         });
 
@@ -110,16 +119,16 @@ describe('Ties Client Basic functions', function() {
             lastInvite = lastInvite ? EC.decodeInvitation(lastInvite).index : 0;
 
             //Withdraw latest invitations
-/*            for(let i=40; i<=lastInvite; ++i){
-                try {
-                    let code = EC.encodeInvitation(i, user.wallet.secret);
-                    let status = await user.invitationRedeem(code);
-                    console.log('Withdrawn invitation ' + i + ': ' + status);
-                }catch(e){
-                    console.log('Error Withdrawing invitation ' + i + ': ' + e.message);
-                }
-            }
-*/
+            // for(let i=40; i<=lastInvite; ++i){
+            //     try {
+            //         let code = EC.encodeInvitation(i, user.wallet.secret);
+            //         let status = await user.invitationRedeem(code);
+            //         console.log('Withdrawn invitation ' + i + ': ' + status);
+            //     }catch(e){
+            //         console.log('Error Withdrawing invitation ' + i + ': ' + e.message);
+            //     }
+            // }
+
             invite1 = await Client.user.invitationCreate();
             invite2 = await Client.user.invitationCreate();
 
@@ -158,12 +167,12 @@ describe('Ties Client Basic functions', function() {
             }
 
             assert.ok(balanceOld.eq(0), 'User should have zero ether balance!');
-            let tokensOld = await user.getBalance();
+            let tokensOld = await user.getTieBalance();
 
             await user.invitationRedeem(invite1);
 
             let balance = await user.getNativeBalance();
-            let tokens = await user.getBalance();
+            let tokens = await user.getTieBalance();
 
             assert.ok(balance.eq(balanceOld.add(Client.BC.web3.toWei(0.2, 'ether'))), "Ether balance should have increased");
             assert.ok(tokens.eq(tokensOld.add(Client.BC.web3.toWei(10, 'ether'))), "TIE balance should have increased");
@@ -174,15 +183,29 @@ describe('Ties Client Basic functions', function() {
             let user = Client.setUser(mainUser);
 
             let balanceOld = await user.getNativeBalance();
-            let tokensOld = await user.getBalance();
+            let tokensOld = await user.getTieBalance();
 
             await user.invitationRedeem(invite2);
 
             let balance = await user.getNativeBalance();
-            let tokens = await user.getBalance();
+            let tokens = await user.getTieBalance();
 
             assert.ok(balance.gt(balanceOld) && balance.lt(balanceOld.add(Client.BC.web3.toWei(0.2, 'ether'))), "Ether balance should have increased less than by 0.2");
             assert.ok(tokens.eq(tokensOld.add(Client.BC.web3.toWei(10, 'ether'))), "TIE balance should have increased");
+        });
+
+        it('should transfer', async function() {
+            this.timeout(20000);
+            let user_to = await Client.createUserFromPrivateKey("April crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute");
+            let user = Client.setUser(mainUser);
+
+            let tokensOld = await user.getTieBalance();
+
+            await user.transfer(user_to.wallet.address, 10);
+
+            let tokens = await user.getTieBalance();
+
+            assert.ok(tokens.eq(tokensOld.sub(10)), "TIE balance should have decreased");
         });
     });
 });

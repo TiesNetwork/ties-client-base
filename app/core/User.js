@@ -75,11 +75,11 @@ class User {
         this.user = row;
     }
 
-    async getDeposit() {
+    async getTieDeposit() {
         return await c.BC.Registry.getDeposit(this.wallet.address);
     }
 
-    async getBalance() {
+    async getTieBalance() {
         return await c.BC.TieToken.balanceOf(this.wallet.address);
     }
 
@@ -87,8 +87,8 @@ class User {
         return await c.BC.web3.eth.getBalancePromise(this.wallet.address);
     }
 
-    async hasDeposit() {
-        let val = await this.getDeposit();
+    async hasTieDeposit() {
+        let val = await this.getTieDeposit();
         return val.gt(0);
     }
 
@@ -155,6 +155,14 @@ class User {
             //User does not have ether. Sponsor him
             return await c.invitationRedeem(code, this.wallet.address);
         }
+    }
+
+    async transfer(to, ties, native){
+        let self = this;
+        let u = await User.createFromDB(to);
+        await c.makeTransactions(async () => {
+            await c.BC.TieToken.transferAndPay(to, ties, null, {from: self.wallet.address, value: native});
+        }, `Transferring ${ties} TIE and ${native || 0} ETH to ${u.user.name} ${u.user.surname}`);
     }
 
     async saveToDB(){
