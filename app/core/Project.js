@@ -52,6 +52,10 @@ class Project {
         return Project.createFromData(json);
     }
 
+    static async getProjects(address){
+        let projects = await c.DB.instance.Project.findAsync({__address: address}, {raw: true});
+        return projects.map(p => Project.createFromData(p));
+    }
 }
 
 module.exports = Project;
