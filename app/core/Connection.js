@@ -196,6 +196,11 @@ class Connection {
             json: true // Automatically parses the JSON string in the response
         });
 
+        if(!result.ok) {
+            console.log("Error saving object: ", result);
+            throw new Error(result.error || 'Unknown error');
+        }
+
         return result;
     }
 
