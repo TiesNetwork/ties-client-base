@@ -19,6 +19,7 @@ class Project {
         if(!raw)
             return null;
         const o = Project.createFromData(raw);
+        return o;
     }
 
     initializeFromData(raw){
