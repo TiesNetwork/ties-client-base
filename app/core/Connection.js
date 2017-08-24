@@ -109,6 +109,10 @@ class Connection {
         return require('./Wallet');
     }
 
+    get Invoice() {
+        return require('./Invoice');
+    }
+
     set signingWallet(wallet) {
         this.wallet = wallet;
     }

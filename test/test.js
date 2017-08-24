@@ -207,6 +207,43 @@ describe('Ties Client Basic functions', function() {
 
             assert.ok(tokens.eq(tokensOld.sub(10)), "TIE balance should have decreased");
         });
+
+        it('should manipulate projects', async function() {
+            let user_to = await Client.createUserFromPrivateKey("April crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute");
+            Client.setUser(user);
+
+            let invoice = Client.Invoice.createNew({
+                comment: 'Pay for the air',
+                currency: 'TIE',
+                amount: Client.BC.web3.toWei(0.01, 'ether').toString(),
+                recepient: user_to.wallet.address
+            });
+
+            await invoice.saveToDB();
+
+            let invoices = await Client.Invoice.getIncoming(user_to.wallet.address);
+            assert.ok(invoices.length >= 1, 'April should have at least one incoming invoice');
+
+            invoice = invoices[0];
+            Client.setUser(user_to);
+
+            invoice.setPaid();
+            await invoice.saveToDB();
+
+            invoices = await Client.Invoice.getOutgoing(user.wallet.address);
+            assert.ok(invoices.length >= 1, 'Vassiliy should have at least one outgoing invoice');
+            assert.ok(invoices[0].getPaid(), 'The invoice should have been paid by April');
+
+//            //Clean up invoices
+            let json = invoices[0].toJson();
+            await Client.saveObject('ties_invoice_status', {__address: json.status.__address, id: json.status.id}, true);
+            Client.setUser(user);
+            await Client.saveObject('ties_invoice', {__address: json.invoice.__address, id: json.invoice.id}, true);
+
+        });
+
+
+
     });
 });
 
