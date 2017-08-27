@@ -55,13 +55,12 @@ async function connectToBlockchain(){
             if(!transactionData)
                 return cb('You should perform transactions in connection.makeTransactions block!');
 
-            let confirmPromise = (connection.callback)(transactionData.description);
             blockchain.web3.eth.estimateGas(rawTx, (error, result) => {
                 if(error) {
-                    cb(error);
+                    cb("Could not estimate gas - not enough funds or transaction will fail with the current parameters");
                 }else{
                     rawTx.gas = result;
-                    confirmPromise.then(
+                    (connection.callback)(transactionData.description).then(
                         secret => cb(null, sign(rawTx, EUtils.bufferToHex(secret))),
                         error => cb(error)
                     );

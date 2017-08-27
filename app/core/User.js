@@ -159,10 +159,11 @@ class User {
 
     async transfer(to, ties, native){
         let self = this;
-        let u = await User.createFromDB(to);
+        let u = await User.createFromDB(to.toLowerCase());
+        let name = u ? `${u.user.name} ${u.user.surname}` : to;
         await c.makeTransactions(async () => {
             await c.BC.TieToken.transferAndPay(to, ties, null, {from: self.wallet.address, value: native});
-        }, `Transferring ${ties} TIE and ${native || 0} ETH to ${u.user.name} ${u.user.surname}`);
+        }, `Transferring ${ties} TIE and ${native || 0} ETH to ${name}`);
     }
 
     async saveToDB(){
