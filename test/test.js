@@ -48,7 +48,7 @@ describe('Ties Client Basic functions', function() {
             let val = await user.getTieBalance();
             assert.ok(val.gt(0));
         });
-
+/*
         it('can check user deposit', async function() {
             this.timeout(60000); //Waiting a minute for a transaction confirmation
             let prevval = await user.getTieDeposit();
@@ -193,7 +193,7 @@ describe('Ties Client Basic functions', function() {
             assert.ok(balance.gt(balanceOld) && balance.lt(balanceOld.add(Client.BC.web3.toWei(0.2, 'ether'))), "Ether balance should have increased less than by 0.2");
             assert.ok(tokens.eq(tokensOld.add(Client.BC.web3.toWei(10, 'ether'))), "TIE balance should have increased");
         });
-
+*/
         it('should transfer', async function() {
             this.timeout(20000);
             let user_to = await Client.createUserFromPrivateKey("April crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute");
@@ -201,14 +201,16 @@ describe('Ties Client Basic functions', function() {
 
             let tokensOld = await user.getTieBalance();
 
-            await user.transfer(user_to.wallet.address, 10);
+            let tx = await user.transfer(user_to.wallet.address, 10);
+            assert.equal(tx.length, 1, 'transfer should be a single transaction');
+            assert.ok(tx[0].tx, 'transfer should have returned transaction info');
 
             let tokens = await user.getTieBalance();
 
             assert.ok(tokens.eq(tokensOld.sub(10)), "TIE balance should have decreased");
         });
-
-        it('should manipulate projects', async function() {
+/*
+        it('should manipulate invoices', async function() {
             let user_to = await Client.createUserFromPrivateKey("April crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute");
             Client.setUser(user);
 
@@ -241,7 +243,7 @@ describe('Ties Client Basic functions', function() {
             await Client.saveObject('ties_invoice', {__address: json.invoice.__address, id: json.invoice.id}, true);
 
         });
-
+*/
 
 
     });

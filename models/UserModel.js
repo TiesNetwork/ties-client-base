@@ -27,6 +27,10 @@ module.exports = {
         description: {
         	type: "text"
         },
+        contacts: {
+            type: "list",
+            typeDef: "<ascii>"
+        },
         keywords: {
         	type: "list",
         	typeDef: "<text>"

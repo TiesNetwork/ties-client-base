@@ -51,21 +51,26 @@ async function connectToBlockchain(){
     const SignerProvider = require('ethjs-provider-signer');
 
     const provider = new SignerProvider(config.blockchain.host, {
-        signTransaction: (rawTx, cb) => {
+        signTransaction: async (rawTx, cb) => {
             if(!transactionData)
                 return cb('You should perform transactions in connection.makeTransactions block!');
 
-            blockchain.web3.eth.estimateGas(rawTx, (error, result) => {
-                if(error) {
-                    cb("Could not estimate gas - not enough funds or transaction will fail with the current parameters");
-                }else{
-                    rawTx.gas = result;
-                    (connection.callback)(transactionData.description).then(
-                        secret => cb(null, sign(rawTx, EUtils.bufferToHex(secret))),
-                        error => cb(error)
-                    );
-                }
-            })
+            try {
+                let gas = await blockchain.web3.eth.estimateGasPromise(rawTx);
+                rawTx.gas = gas;
+            }catch(e){
+                cb("Could not estimate gas: not enough funds or transaction will fail with the current parameters");
+                return;
+            }
+
+            try {
+                let secret = await (connection.callback)(transactionData.description);
+
+                cb(null, sign(rawTx, EUtils.bufferToHex(secret)));
+            }catch(e){
+                cb(e && (e.message || e));
+                return;
+            }
         },
         accounts: (cb) => cb(null, [connection.wallet.address]),
     });
@@ -163,7 +168,10 @@ class Connection {
      *
      * @param payload - async function payload()
      * @param description - string description of the transaction to be shown to user when prompting for confirmation
-     * @returns {Promise.<void>}
+     * @returns [  {tx => transaction hash, string,
+     *              logs => array of trigger events,
+     *              receipt => receipt object}
+     *          ]
      */
     async makeTransactions(payload, description) {
         if (transactionData)
@@ -179,7 +187,8 @@ class Connection {
         };
 
         try {
-            await payload();
+            let transactions = await payload();
+            return transactions;
         }finally{
             transactionData = null;
         }
@@ -309,6 +318,13 @@ class Connection {
         return require('../chat');
     }
 
+    getTxUrl(txhash){
+        return `https://kovan.etherscan.io/tx/${txhash}`;
+    }
+
+    getAddressUrl(address){
+        return `https://kovan.etherscan.io/address/${address}`;
+    }
 }
 
 module.exports = new Connection();

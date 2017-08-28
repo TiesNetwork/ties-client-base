@@ -95,10 +95,11 @@ class User {
     async register() {
         const sum = 10 * Math.pow(10, 18);
         let self = this;
-        await c.makeTransactions(async () => {
+        return await c.makeTransactions(async () => {
             console.log('Transferring deposit');
-            await c.BC.TieToken.transfer(c.BC.RegistryContract.address, sum, {from: self.wallet.address});
+            let tx = await c.BC.TieToken.transfer(c.BC.RegistryContract.address, sum, {from: self.wallet.address});
             console.log('Registration done');
+            return [tx];
         }, "Registration in the Ties.Network (depositing 10 TIEs)");
     }
 
@@ -111,8 +112,9 @@ class User {
         let  self = this;
         await c.makeTransactions(async () => {
             console.log('Issuing invitation');
-            await c.BC.TieToken.transferAndPay(c.BC.InvitationContract.address, sum, "0x", {from: self.wallet.address, value: ether});
+            let tx = await c.BC.TieToken.transferAndPay(c.BC.InvitationContract.address, sum, "0x", {from: self.wallet.address, value: ether});
             console.log('Invitation done');
+            return [tx];
         }, "Issuing invitation code (depositing 10 TIEs and 0.2 Ether for invittee)");
 
         return await this.invitationGetLast();
@@ -161,8 +163,9 @@ class User {
         let self = this;
         let u = await User.createFromDB(to.toLowerCase());
         let name = u ? `${u.user.name} ${u.user.surname}` : to;
-        await c.makeTransactions(async () => {
-            await c.BC.TieToken.transferAndPay(to, ties, null, {from: self.wallet.address, value: native});
+        return await c.makeTransactions(async () => {
+            let tx = await c.BC.TieToken.transferAndPay(to, ties, null, {from: self.wallet.address, value: native});
+            return [tx];
         }, `Transferring ${ties} TIE and ${native || 0} ETH to ${name}`);
     }
 
