@@ -28,7 +28,9 @@ class Wallet {
     }
 
     static createDecrypt(encrypted_json_str, password) {
-        return new Wallet(EC.recoverWalletFromEncryptedPrivateKey(encrypted_json_str, password));
+        let w = new Wallet(EC.recoverWalletFromEncryptedPrivateKey(encrypted_json_str, password));
+        w.password = password;
+        return w;
     }
 
     static createNew() {

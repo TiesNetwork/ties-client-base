@@ -120,15 +120,16 @@ class Connection {
      * @param cb - async function confirmCallback(description) returns string password
      */
     set confirmCallback(cb) {
-        this.callback = async function (description) {
+    	let self = this;
+        self.callback = async function (description) {
             if (transactionData.secret)
                 return transactionData.secret;
 
             let pass = await cb(description);
-            if (this.wallet.password !== pass)
+            if (self.wallet.password !== pass)
                 throw new Error('Invalid password');
 
-            transactionData.secret = this.wallet.secret;
+            transactionData.secret = self.wallet.secret;
             return transactionData.secret;
         }
     }
