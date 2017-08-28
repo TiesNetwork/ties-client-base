@@ -249,6 +249,40 @@ class User {
         return Project.createFromData(raw);
     }
 
+    hasContact(address){
+        return this.getContactsRaw().indexOf(address) >= 0;
+    }
+
+    addContact(address){
+        if(!this.hasContact(address)) {
+            if(!this.user.contacts)
+                this.user.contacts = [];
+            this.user.contacts.push(address);
+        }
+    }
+
+    removeContact(address){
+        const _ = require('lodash');
+        _.pull(this.getContactsRaw(), address);
+    }
+
+    getContactsRaw(){
+        return (this.user.contacts || []);
+    }
+
+    /**
+     *
+     * @returns {Promise.<User[]>}
+     */
+    async getContacts(){
+        let promises = this.getContactsRaw().map(address => User.createFromDB(address));
+        if(promises.length)
+            return await Promise.all(promises);
+        else
+            return promises;
+    }
+
+
 }
 
 module.exports = User;
