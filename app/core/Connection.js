@@ -205,7 +205,7 @@ class Connection {
         let result = await rp({
             method: del ? 'DELETE' : 'POST',
             uri: config.tiesdb.host + 'db/' + table,
-            body: object,
+            body: JSON.parse(EC.messageToJson(object)),
             json: true // Automatically parses the JSON string in the response
         });
 
