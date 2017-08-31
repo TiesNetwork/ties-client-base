@@ -216,7 +216,7 @@ class User {
     toJson(){
         return {
             user: this.user,
-            projects: projects && projects.map(p => p.toJson()),
+            projects: this.projects && this.projects.map(p => p.toJson()),
             wallet: this.wallet.toJson()
         }
     }
