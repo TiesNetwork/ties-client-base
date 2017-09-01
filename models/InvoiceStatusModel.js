@@ -15,8 +15,8 @@ module.exports = {
         invoice_signature: {
         	type: "ascii"
         },
-        paid: {
-        	type: "boolean"
+        transaction: {
+        	type: "ascii"
         },
         viewed: {
             type: "boolean"
