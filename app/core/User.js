@@ -282,6 +282,21 @@ class User {
             return promises;
     }
 
+    /**
+     * Returns demo rating - not real rating
+     * returns value between 0 and 100
+     */
+    getRating(){
+        if(!this.user)
+            return 0;
+        const CRC32 = require('crc-32');
+        let crc = CRC32.str(this.user.name + ' ' + this.user.surname);
+        if(crc < 0)
+            crc = -(crc+1);
+        let r = crc%35;
+        return 65 + r;
+    }
+
 
 }
 

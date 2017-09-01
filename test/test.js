@@ -47,6 +47,7 @@ describe('Ties Client Basic functions', function() {
         it('should save user after reading it', async function() {
             let user_to = await Client.createUserFromPrivateKey("April crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute");
             assert.ok(user_to.user.photo instanceof Buffer, 'Cassandra should have returned buffer for photo');
+            assert.ok(user_to.getRating() >= 65, 'Pseudo rating should always be more than 65');
 
             await user_to.saveToDB();
             Client.setUser(mainUser);
