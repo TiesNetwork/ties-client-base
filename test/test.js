@@ -44,6 +44,14 @@ describe('Ties Client Basic functions', function() {
             assert.ok(user.wallet.address == '0x00dbD017A900258A242599624781f7423969c671'.toLowerCase());
         });
 
+        it('should save user after reading it', async function() {
+            let user_to = await Client.createUserFromPrivateKey("April crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute");
+            assert.ok(user_to.user.photo instanceof Buffer, 'Cassandra should have returned buffer for photo');
+
+            await user_to.saveToDB();
+            Client.setUser(mainUser);
+        });
+
         it('can check user balance', async function() {
             let val = await user.getTieBalance();
             assert.ok(val.gt(0));

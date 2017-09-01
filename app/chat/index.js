@@ -6,6 +6,15 @@ const config = require('../../config');
 const SimpleSignalClient = require('simple-signal-client');
 const _ = require('lodash');
 
+const c_peer_opts = {
+    config: {
+        iceServers: [
+            { url: 'stun:stun.l.google.com:19302' },
+            { url: 'turn:tiesuser@hosting.krawlly.com', credential: '9a349aflang8w3'}
+        ]
+    }
+};
+
 /**
  * Usage:
  *      const Chat = require('@ties-network/ties-client-base').Chat;
@@ -65,7 +74,7 @@ class Chat{
         let peers = this.peers[to];
         if(!peers || !peers.length){
             if(msg) this.addPengingMessage(to, msg);
-            this.signalClient.connect(to, null, {address: this.address});
+            this.signalClient.connect(to, c_peer_opts, {address: this.address});
         }else if(msg){
             peers.forEach(peer => peer.send(msg));
         }
@@ -83,12 +92,12 @@ class Chat{
         signalClient.on('ready', function () {
             //Connect to all contacts
             self.contacts.forEach(address => {
-                self.signalClient.connect(address, null, {address: self.address});
+                self.signalClient.connect(address, c_peer_opts, {address: self.address});
             });
         });
 
         signalClient.on('request', function (request) {
-            request.accept(null, {address: this.address}) // Accept a request to connect
+            request.accept(c_peer_opts, {address: this.address}) // Accept a request to connect
         });
 
         signalClient.on('peer', function (peer) {
@@ -139,7 +148,7 @@ class Chat{
     addContact(address){
         if(this.contacts.indexOf(address) < 0) {
             this.contacts.push(address);
-            this.signalClient.connect(address, null, {address: this.address});
+            this.signalClient.connect(address, c_peer_opts, {address: this.address});
         }
     }
 
