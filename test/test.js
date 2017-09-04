@@ -44,6 +44,15 @@ describe('Ties Client Basic functions', function() {
             assert.ok(user.wallet.address == '0x00dbD017A900258A242599624781f7423969c671'.toLowerCase());
         });
 
+        it('should save user after reading it', async function() {
+            let user_to = await Client.createUserFromPrivateKey("April crunchy protozoan magazine punctured unicycle overrate antacid jokester salami platypus fracture mute");
+            assert.ok(user_to.user.photo instanceof Buffer, 'Cassandra should have returned buffer for photo');
+            assert.ok(user_to.getRating() >= 65, 'Pseudo rating should always be more than 65');
+
+            await user_to.saveToDB();
+            Client.setUser(mainUser);
+        });
+
         it('can check user balance', async function() {
             let val = await user.getTieBalance();
             assert.ok(val.gt(0));
@@ -229,12 +238,12 @@ describe('Ties Client Basic functions', function() {
             invoice = invoices[0];
             Client.setUser(user_to);
 
-            invoice.setPaid();
+            invoice.setTransaction('xxx');
             await invoice.saveToDB();
 
             invoices = await Client.Invoice.getOutgoing(user.wallet.address);
             assert.ok(invoices.length >= 1, 'Vassiliy should have at least one outgoing invoice');
-            assert.ok(invoices[0].getPaid(), 'The invoice should have been paid by April');
+            assert.ok(invoices[0].getTransaction(), 'The invoice should have been paid by April');
 
 //            //Clean up invoices
             let json = invoices[0].toJson();

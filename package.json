@@ -1,6 +1,6 @@
 {
   "name": "@ties-network/ties-client-base",
-  "version": "1.2.13",
+  "version": "1.2.16",
   "description": "Ties.Network client library",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "dependencies": {
     "@ties-network/db-sign": "^0.1.7",
     "canonical-json": "0.0.4",
+    "crc-32": "^1.1.0",
     "ethjs-provider-signer": "^0.1.4",
     "ethjs-signer": "^0.1.1",
     "express-cassandra": "^1.9.1",

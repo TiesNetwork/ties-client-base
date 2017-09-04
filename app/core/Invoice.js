@@ -154,8 +154,8 @@ class Invoice {
         return this.status && this.status.viewed;
     }
 
-    getPaid(){
-        return this.status && this.status.paid;
+    getTransaction(){
+        return this.status && this.status.transaction;
     }
 
     setViewed(val){
@@ -165,11 +165,11 @@ class Invoice {
         this.status.viewed = val;
     }
 
-    setPaid(val){
+    setTransaction(val){
         if(typeof val == 'undefined')
             val = true;
         this._ensureStatus();
-        this.status.paid = val;
+        this.status.transaction = val;
     }
 
 }
