@@ -97,7 +97,7 @@ class Chat{
         });
 
         signalClient.on('request', function (request) {
-            request.accept(c_peer_opts, {address: this.address}) // Accept a request to connect
+            request.accept(c_peer_opts, {address: self.address}) // Accept a request to connect
         });
 
         signalClient.on('peer', function (peer) {
