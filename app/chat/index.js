@@ -10,7 +10,7 @@ const c_peer_opts = {
     config: {
         iceServers: [
             { url: 'stun:stun.l.google.com:19302' },
-            { url: 'turn:tiesuser@hosting.krawlly.com', credential: '9a349aflang8w3'}
+            { url: 'turn:hosting.krawlly.com', username: 'tiesuser', credential: '9a349aflang8w3'}
         ]
     }
 };
