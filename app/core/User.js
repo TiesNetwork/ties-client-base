@@ -170,6 +170,10 @@ class User {
     }
 
     async saveToDB(){
+    	if(!this.user)
+    		throw new AnyBalance.Error('There is no user data set! Nothing to save!');
+   		if(!this.user.__address)
+   			this.user.__address = this.wallet.address;
         return await c.saveObject(TABLE_NAME, this.user);
     }
 
