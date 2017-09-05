@@ -65,8 +65,11 @@ async function connectToBlockchain(){
 
             try {
                 let secret = await (connection.callback)(transactionData.description);
-
-                cb(null, sign(rawTx, EUtils.bufferToHex(secret)));
+                if(secret) {
+                    cb(null, sign(rawTx, EUtils.bufferToHex(secret)));
+                }else{
+                    cb('User cancelled entering the password');
+                }
             }catch(e){
                 cb(e && (e.message || e));
                 return;
@@ -131,11 +134,16 @@ class Connection {
                 return transactionData.secret;
 
             let pass = await cb(description);
-            if (self.wallet.password !== pass)
-                throw new Error('Invalid password');
+            if(pass) {
+                if (self.wallet.password !== pass)
+                    throw new Error('Invalid password');
 
-            transactionData.secret = self.wallet.secret;
-            return transactionData.secret;
+                transactionData.secret = self.wallet.secret;
+                return transactionData.secret;
+            }else{
+                //Cancelled entering the password
+                return null;
+            }
         }
     }
 
@@ -324,6 +332,10 @@ class Connection {
 
     getAddressUrl(address){
         return `https://kovan.etherscan.io/address/${address}`;
+    }
+
+    get utils() {
+        return require('../util');
     }
 }
 
