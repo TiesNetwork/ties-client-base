@@ -19,7 +19,7 @@ class Wallet {
         if(/\s+/.test(phraseOrHexpk)){
             //It is a phrase containing spaces
             return new Wallet(EC.recoverWallet(phraseOrHexpk));
-        }else if(/^0x[\da-f]$/i.test(phraseOrHexpk)){
+        }else if(/^0x[\da-f]+$/i.test(phraseOrHexpk)){
             //It is a raw private key
             return new Wallet(EC.recoverWalletFromPrivateKey(phraseOrHexpk));
         }else{
