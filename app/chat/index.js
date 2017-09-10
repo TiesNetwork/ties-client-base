@@ -109,6 +109,7 @@ class Chat{
                     messages.forEach(msg => {
                         peer.send(msg);
                     });
+                    delete self.pendingMessages[peer.metadata.address];
                 }
             });
 

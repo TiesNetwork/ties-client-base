@@ -166,7 +166,7 @@ class User {
         return await c.makeTransactions(async () => {
             let tx = await c.BC.TieToken.transferAndPay(to, ties, null, {from: self.wallet.address, value: native});
             return [tx];
-        }, `Transferring ${ties} TIE and ${native || 0} ETH to ${name}`);
+        }, `Transferring ${c.utils.formatEther(ties)} TIE and ${c.utils.formatEther(native || 0)} ETH to ${name}`);
     }
 
     async saveToDB(){
