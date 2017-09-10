@@ -1,6 +1,6 @@
 {
   "name": "@ties-network/ties-client-base",
-  "version": "1.2.19",
+  "version": "1.2.20",
   "description": "Ties.Network client library",
   "main": "index.js",
   "scripts": {
@@ -9,12 +9,12 @@
   "author": "Dmitry Kochin <k@ties.network>",
   "license": "ISC",
   "dependencies": {
-    "@ties-network/db-sign": "^0.1.8",
+    "@ties-network/db-sign": "^0.1.9",
     "canonical-json": "0.0.4",
     "crc-32": "^1.1.0",
     "ethjs-provider-signer": "^0.1.4",
     "ethjs-signer": "^0.1.1",
-    "express-cassandra": "^1.9.1",
+    "express-cassandra": "^1.9.1 <1.10.0",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
     "simple-peer": "^8.1.1",
@@ -23,7 +23,7 @@
     "truffle-contract": "^2.0.5"
   },
   "devDependencies": {
-    "mocha": "^3.5.0"
+    "mocha": "^3.5.1"
   },
   "directories": {
     "test": "test"
