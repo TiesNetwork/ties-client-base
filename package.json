@@ -1,6 +1,6 @@
 {
   "name": "@ties-network/ties-client-base",
-  "version": "1.2.22",
+  "version": "1.2.23",
   "description": "Ties.Network client library",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,7 @@
     "ethjs-provider-signer": "^0.1.4",
     "ethjs-signer": "^0.1.1",
     "express-cassandra": "^1.9.1 <1.10.0",
+    "glob": "^7.1.2",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
     "simple-peer": "^8.1.1",
