@@ -271,7 +271,7 @@ class User {
     }
 
     getContactsRaw(){
-        return (this.user.contacts || []);
+        return (this.user && this.user.contacts) || [];
     }
 
     /**
